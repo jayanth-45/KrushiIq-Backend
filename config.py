@@ -10,6 +10,9 @@ class Config:
     MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
     DB_NAME = os.getenv('DB_NAME', 'krushiiq_nova')
 
+    # Gemini API Key
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyBL1J9ktXQG_wu9JQAELCLCF4YGlXnrrAY')
+
     # Swagger settings
     SWAGGER = {
         'title': 'KrushiIQ Nova API',

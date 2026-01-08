@@ -1,8 +1,18 @@
 from flask import Blueprint, request
 from flasgger import swag_from
 from utils.utils import success_response, error_response, validate_fields
+import random
 
 market_bp = Blueprint('market', __name__)
+
+# Dummy market data (price per quintal in INR)
+MARKET_PRICES = {
+    "wheat": 2000,
+    "rice": 1800,
+    "maize": 1600,
+    "cotton": 5500,
+    "sugarcane": 300,
+}
 
 @market_bp.route('/market-prices', methods=['GET'])
 @swag_from({
@@ -40,9 +50,17 @@ def get_market_price():
     crop = request.args.get('crop')
     if not crop:
         return error_response("Crop parameter is required")
-        
-    # Placeholder static price; replace with real data source
-    result = {'crop': crop, 'price_per_quintal': 2500, 'unit': 'INR'}
+
+    crop = crop.lower()
+    if crop not in MARKET_PRICES:
+        return error_response(f"Market price not available for crop: {crop}")
+
+    # Simulate price fluctuation
+    base_price = MARKET_PRICES[crop]
+    price_fluctuation = random.uniform(-0.1, 0.1)  # +/- 10%
+    current_price = base_price * (1 + price_fluctuation)
+
+    result = {'crop': crop, 'price_per_quintal': round(current_price, 2), 'unit': 'INR'}
     return success_response(result)
 
 @market_bp.route('/profit-estimation', methods=['POST'])
@@ -93,5 +111,5 @@ def profit_estimation():
         return error_response(error_msg)
 
     profit = (data['price_per_quintal'] - data['cost_per_quintal']) * data['estimated_yield']
-    result = {'estimated_profit': profit, 'currency': 'INR'}
+    result = {'estimated_profit': round(profit, 2), 'currency': 'INR'}
     return success_response(result)

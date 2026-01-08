@@ -7,7 +7,15 @@ farmer_bp = Blueprint('farmer', __name__)
 @farmer_bp.route('/farmer-profile', methods=['GET'])
 @swag_from({
     'tags': ['Farmer'],
-    'parameters': [],
+    'parameters': [
+        {
+            'name': 'name',
+            'in': 'query',
+            'type': 'string',
+            'required': True,
+            'description': 'Name of the farmer to fetch the profile for.'
+        }
+    ],
     'responses': {
         200: {
             'description': 'Farmer profile information',
@@ -26,19 +34,21 @@ farmer_bp = Blueprint('farmer', __name__)
                     }
                 }
             }
+        },
+        404: {
+            'description': 'Farmer not found'
         }
     }
 })
 def get_profile():
-    # Fetch from MongoDB (using a hardcoded email/id for demo purposes)
-    profile = current_app.db.farmers.find_one({'name': 'John Doe'}, {'_id': 0})
+    farmer_name = request.args.get('name')
+    if not farmer_name:
+        return error_response("Farmer name is required as a query parameter.")
+
+    profile = current_app.db.farmers.find_one({'name': farmer_name}, {'_id': 0})
     if not profile:
-        profile = {
-            'name': 'John Doe',
-            'location': 'Bangalore, Karnataka',
-            'land_acres': 2.5,
-            'language': 'en'
-        }
+        return error_response(f"Farmer '{farmer_name}' not found.", 404)
+        
     return success_response(profile)
 
 @farmer_bp.route('/farmer-profile', methods=['POST'])
